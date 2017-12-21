@@ -37,8 +37,12 @@ tr.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/dti
 qa.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/dti/n1601_dti_qa_20170301.csv')
 dti.data <- merge(tr.data, qa.data)
 
+# Now tract values
+fa.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/dti/n1601_JHULabelsFA_20170321.csv')
+fa.data <- merge(fa.data, qa.data)
+
 # Now grab our stress value and merge this in
-stress.data <- read.csv('/data/joy/BBL/projects/brazleyStress/data/pncstressdatasetforadon.csv')
+stress.data <- read.csv('/data/joy/BBL/projects/barzilayStress/data/pncstressdatasetforadon.csv')
 demo.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/demographics/n1601_demographics_go1_20161212.csv')
 stress.data <- merge(stress.data, demo.data)
 
@@ -46,6 +50,7 @@ t1.data <- merge(t1.data, stress.data)
 cbf.data <- merge(cbf.data, stress.data)
 rest.data <- merge(rest.data, stress.data)
 dti.data <- merge(dti.data, stress.data)
+fa.data <- merge(fa.data, stress.data)
 
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'averageManualRating', 't1Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
 
@@ -56,7 +61,7 @@ t1.cov$sex <- as.factor(t1.cov$sex)
 t1.cov$race2 <- as.factor(t1.cov$race2)
 t1.cov$averageManualRating <- ordered(t1.cov$averageManualRating)
 t1.cov$t1Exclude <- binary.flip(t1.cov$t1Exclude)
-saveRDS(t1.cov, "/data/joy/BBL/projects/brazleyStress/data/t1Cov.RDS")
+saveRDS(t1.cov, "/data/joy/BBL/projects/barzilayStress/data/t1Cov.RDS")
 
 # Now do the cbf data
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'pcaslTSNR', 'pcaslExclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
@@ -65,7 +70,7 @@ cbf.cov <- cbf.cov[complete.cases(cbf.cov),]
 cbf.cov$sex <- as.factor(cbf.cov$sex)
 cbf.cov$race2 <- as.factor(cbf.cov$race2)
 cbf.cov$pcaslExclude <- binary.flip(cbf.cov$pcaslExclude)
-saveRDS(cbf.cov, "/data/joy/BBL/projects/brazleyStress/data/cbfCov.RDS")
+saveRDS(cbf.cov, "/data/joy/BBL/projects/barzilayStress/data/cbfCov.RDS")
 
 # Now do reho 
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'restRelMeanRMSMotion', 'restExclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
@@ -74,7 +79,7 @@ rest.cov <- rest.cov[complete.cases(rest.cov),]
 rest.cov$sex <- as.factor(rest.cov$sex)
 rest.cov$race2 <- as.factor(rest.cov$race2)
 rest.cov$restExclude <- binary.flip(rest.cov$restExclude)
-saveRDS(rest.cov, "/data/joy/BBL/projects/brazleyStress/data/restCov.RDS")
+saveRDS(rest.cov, "/data/joy/BBL/projects/barzilayStress/data/restCov.RDS")
 
 # Now do DTI
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'dti64Tsnr', 'dti64Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
@@ -83,4 +88,11 @@ dti.cov <- dti.cov[complete.cases(dti.cov),]
 dti.cov$sex <- as.factor(dti.cov$sex)
 dti.cov$race2 <- as.factor(dti.cov$race2)
 dti.cov$dti64Exclude <- binary.flip(dti.cov$dti64Exclude)
-saveRDS(dti.cov, "/data/joy/BBL/projects/brazleyStress/data/dtiCov.RDS")
+saveRDS(dti.cov, "/data/joy/BBL/projects/barzilayStress/data/dtiCov.RDS")
+
+dti.cov <- fa.data[,demoOfInterest]
+dti.cov <- dti.cov[complete.cases(dti.cov),]
+dti.cov$sex <- as.factor(dti.cov$sex)
+dti.cov$race2 <- as.factor(dti.cov$race2)
+dti.cov$dti64Exclude <- binary.flip(dti.cov$dti64Exclude)
+saveRDS(dti.cov, "/data/joy/BBL/projects/barzilayStress/data/faCov.RDS")
