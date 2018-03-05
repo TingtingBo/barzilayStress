@@ -3,8 +3,11 @@
 # This script will bbe used to find bin sizes for extreme tertile groups
 # on the pathology factor scores in relation to the stress questionaire value
 
+## Source Adon's library
+source('/home/arosen/adroseHelperScripts/R/afgrHelpFunc.R')
+library('ggplot2')
+
 ## Load the data
-# Load all the data
 # Start with the structural imaging data 
 vol.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/t1struct/n1601_jlfAntsCTIntersectionVol_20170412.csv')
 ct.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/t1struct/n1601_jlfAntsCTIntersectionCT_20170331.csv')
@@ -18,6 +21,9 @@ binary.flip <- function(x)
 {
     x*-1 + 1
 }
+
+# Now load all of the imaging data in the mega csv to grab the summary metrics and lobular values
+mega.csv <- read.csv('../../data/n1601_imagingDataDump_2018-03-02.csv')
 
 # Now onto the perfusion data 
 cbf.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/asl/n1601_jlfAntsCTIntersectionPcaslValues_20170403.csv')
@@ -73,6 +79,11 @@ calculateDeltaHiMeLo <- function(data, facScore) {
 
 # Now loop through and grab the pathological factor scores
 pathVals <- names(t1.data)[c(522, 528, 529, 530, 531)]
+pathVals <- names(t1.data)[c(528)]
+
+## Also declare the summary values
+summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanGMTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_L_IOG.y","mprage_jlf_vol_L_OCP.y","mprage_jlf_vol_L_Pallidum.y","mprage_jlf_vol_L_PCu.y","mprage_jlf_vol_R_Pallidum.y","mprage_jlf_vol_R_PCgG.y")
+
 # Now loop through and get bins in each
 outDat <- list()
 index <- 1
@@ -86,9 +97,37 @@ for(q in pathVals){
   outDat[[index]] <- outVal
   index <- index+1
   # Now grab the age values
-  ageVals <- summarySE(data=tmpDat, measurevar='ageAtScan1', groupvars=c('StressBin','PathGroup', 'sex'))
+  ageVals <- summarySE(data=tmpDat, measurevar='ageAtScan1', groupvars=c('StressBin','PathGroup'))
   outputCSV <- paste(q, ".csv", sep='')
-  write.csv(ageVals, outputCSV, quote=F, row.names=F) 
+  write.csv(ageVals, outputCSV, quote=F, row.names=F)
+  ageVals <- summarySE(data=tmpDat, measurevar='envSES', groupvars=c('StressBin','PathGroup'))
+  outputCSV <- paste(q, "SES.csv", sep='')
+  write.csv(ageVals, outputCSV, quote=F, row.names=F)
+  # Now create a combined factor
+  tmpDat$combined <- paste(tmpDat$PathGroup, tmpDat$StressBin)
+  tmpDat <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'))
+
+  pdf("outPlots.pdf")  
+  # Now do the summary metrics
+  for(w in summaryMetrics){
+    sumVal <- summarySE(data=tmpDat, measurevar=w, groupvars=c('StressBin', 'PathGroup'), na.rm=T)
+    sumVal$combined <- paste(sumVal$StressBin,sumVal$PathGroup)
+    minVal <- min(sumVal[,4])/2
+    maxVal <- max(sumVal[,4])*2
+    outPlot <- ggplot(sumVal, aes(x=combined, y=sumVal[,4], fill=PathGroup)) +
+      geom_bar(stat='identity', position=position_dodge(), size=.1) + 
+      labs(title='', x='Group (<1> = stress group <2> = path group)', y=gsub(x=w, pattern='.y', replacement='')) +
+      theme_bw() +
+      geom_errorbar(aes(ymin=sumVal[,4]-se, ymax=sumVal[,4]+se), 
+                       width = .1, position=position_dodge(.9))
+    print(outPlot)
+
+    # Now write a csv with the values
+    outValues <- summarySE(data=tmpDat, measurevar=w, groupvars=c('StressBin', 'PathGroup', 'sex.x'), na.rm=T)
+    write.csv(outValues, paste(w, ".csv", sep=''), quote=F,)
+      
+  }
+  dev.off()
 }
 
 
