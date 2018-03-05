@@ -52,7 +52,7 @@ rest.data <- merge(rest.data, stress.data)
 dti.data <- merge(dti.data, stress.data)
 fa.data <- merge(fa.data, stress.data)
 
-demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'averageManualRating', 't1Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
+demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'averageManualRating', 't1Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES')
 
 # Now prepare t1 coviarte info
 t1.cov <- t1.data[,demoOfInterest]
@@ -64,7 +64,7 @@ t1.cov$t1Exclude <- binary.flip(t1.cov$t1Exclude)
 saveRDS(t1.cov, "/data/joy/BBL/projects/barzilayStress/data/t1Cov.RDS")
 
 # Now do the cbf data
-demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'pcaslTSNR', 'pcaslExclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
+demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'pcaslTSNR', 'pcaslExclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES')
 cbf.cov <- cbf.data[,demoOfInterest]
 cbf.cov <- cbf.cov[complete.cases(cbf.cov),]
 cbf.cov$sex <- as.factor(cbf.cov$sex)
@@ -73,7 +73,7 @@ cbf.cov$pcaslExclude <- binary.flip(cbf.cov$pcaslExclude)
 saveRDS(cbf.cov, "/data/joy/BBL/projects/barzilayStress/data/cbfCov.RDS")
 
 # Now do reho 
-demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'restRelMeanRMSMotion', 'restExclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
+demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'restRelMeanRMSMotion', 'restExclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES')
 rest.cov <- rest.data[,demoOfInterest]
 rest.cov <- rest.cov[complete.cases(rest.cov),]
 rest.cov$sex <- as.factor(rest.cov$sex)
@@ -82,7 +82,7 @@ rest.cov$restExclude <- binary.flip(rest.cov$restExclude)
 saveRDS(rest.cov, "/data/joy/BBL/projects/barzilayStress/data/restCov.RDS")
 
 # Now do DTI
-demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'dti64Tsnr', 'dti64Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2')
+demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'dti64Tsnr', 'dti64Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES')
 dti.cov <- dti.data[,demoOfInterest]
 dti.cov <- dti.cov[complete.cases(dti.cov),]
 dti.cov$sex <- as.factor(dti.cov$sex)
@@ -96,3 +96,9 @@ dti.cov$sex <- as.factor(dti.cov$sex)
 dti.cov$race2 <- as.factor(dti.cov$race2)
 dti.cov$dti64Exclude <- binary.flip(dti.cov$dti64Exclude)
 saveRDS(dti.cov, "/data/joy/BBL/projects/barzilayStress/data/faCov.RDS")
+
+# Now prepare the demographics for each of these modalities
+source("~/adroseHelperScripts/R/afgrHelpFunc.R")
+t1.sum <- summarySE(data=t1.data[which(t1.data$averageManualRating!=0),], groupvars=c('sex','Cummulative_Stress_Load_No_Rape') , measurevar='ageAtScan1')
+cbf.sum <- summarySE(data=cbf.data[which(cbf.data$pcaslExclude==0),], groupvars=c('sex','Cummulative_Stress_Load_No_Rape'), measurevar='ageAtScan1')
+rest.sum <- summarySE(data=rest.data[which(rest.data$restExclude==0),],groupvars=c('sex','Cummulative_Stress_Load_No_Rape'), measurevar='ageAtScan1') 

@@ -10,7 +10,7 @@ dataDir="/data/joy/BBL/projects/barzilayStress/data/"
 subjID="bblid,scanid"
 pAdjustMethod="fdr"
 inputDir="/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/"
-baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+race2"
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+envSES"
 
 # Now dynamic variable arrays
 covsFile=( t1Cov.RDS t1Cov.RDS t1Cov.RDS cbfCov.RDS restCov.RDS restCov.RDS dtiCov.RDS faCov.RDS )
@@ -29,10 +29,45 @@ for i in `seq 0 7` ; do
   echo ${formulaValue} ; 
 done
 
+# Now add the overall pathology but it is age regressed need to see if that is a probblem!
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+envSES+Overall_Psychopathology_ar"
+for i in `seq 0 7` ; do 
+  formulaValue=`echo ${baseCovsForm}+${covIn[i]}`
+  covsValue=${dataDir}${covsFile[i]}
+  inputData=${inputDir}${inputName[i]}
+
+  # Now call the script 
+  Rscript ${gamScript} -c ${covsValue} -o ${dataDir} -p ${inputData} -i ${excludeVals[i]} -u ${subjID} -f ${formulaValue} -a ${pAdjustMethod} -r false -n 1
+  echo ${formulaValue} ; 
+done
+
+baseCovsForm="~s(ageAtScan1,k=4)+sex+race2+Overall_Psychopathology_ar*Cummulative_Stress_Load_No_Rape"
+for i in `seq 0 7` ; do 
+  formulaValue=`echo ${baseCovsForm}+${covIn[i]}`
+  covsValue=${dataDir}${covsFile[i]}
+  inputData=${inputDir}${inputName[i]}
+
+  # Now call the script 
+  Rscript ${gamScript} -c ${covsValue} -o ${dataDir} -p ${inputData} -i ${excludeVals[i]} -u ${subjID} -f ${formulaValue} -a ${pAdjustMethod} -r false -n 1
+  echo ${formulaValue} ; 
+done
+
+# Now do just the overall p 
+baseCovsForm="~s(ageAtScan1,k=4)+Overall_Psychopathology_ar+sex+envSES"
+for i in `seq 0 7` ; do 
+  formulaValue=`echo ${baseCovsForm}+${covIn[i]}`
+  covsValue=${dataDir}${covsFile[i]}
+  inputData=${inputDir}${inputName[i]}
+
+  # Now call the script 
+  Rscript ${gamScript} -c ${covsValue} -o ${dataDir} -p ${inputData} -i ${excludeVals[i]} -u ${subjID} -f ${formulaValue} -a ${pAdjustMethod} -r false -n 1
+  echo ${formulaValue} ; 
+done
+
 # Now probe an interaction between PTSD nad no PTSD
 # This requires different cov files and a diff model
 covsFile=( t1CovIN.RDS t1CovIN.RDS t1CovIN.RDS cbfCovIN.RDS restCovIN.RDS restCovIN.RDS dtiCovIN.RDS faCovIN.RDS )
-baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape*PTSD+sex+race2"
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape*PTSD+sex+envSES"
 
 # Now loop thorugh the length of our array and run our univariate analyses for each metric
 for i in `seq 0 7` ; do 
