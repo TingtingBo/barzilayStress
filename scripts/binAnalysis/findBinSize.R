@@ -89,6 +89,27 @@ outDat <- list()
 index <- 1
 for(q in pathVals){
   tmpDat <- calculateDeltaHiMeLo(t1.data, q)
+  # Now create a line plot for all of these guys to 
+  # make the interaction appearant
+  pdf("interactionPlot.pdf")
+  for(w in summaryMetrics){
+    tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+    colVal <- grep(paste(w), names(tmpDat2))
+    tmpDat2 <- tmpDat2[complete.cases(tmpDat2$StressBin),]
+    tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
+    tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c(1,2,3))
+    outPlot <- ggplot(tmpDat2, aes(x=Anxious_Misery_ar, y=tmpDat2[,colVal], group=StressBin, col=StressBin)) + 
+      geom_point() +
+      geom_smooth(method='lm',level=0) + 
+      ylab(gsub(x=w, pattern='.y', replacement=''))
+    print(outPlot)
+    outPlot2 <- ggplot(tmpDat2, aes(x=Cummulative_Stress_Load_No_Rape, y=tmpDat2[,colVal], group=PathGroup, col=PathGroup)) + 
+      geom_point() +
+      geom_smooth(method='lm',level=0) + 
+      ylab(gsub(x=w, pattern='.y', replacement=''))
+    print(outPlot2)
+  }
+  dev.off()
   tmpDat <- tmpDat[-which(tmpDat$PathGroup==2),]
   tmpDat <- tmpDat[-which(tmpDat$StressBin==1),]
   tmpDat <- tmpDat[-which(tmpDat$StressBin==2),]
