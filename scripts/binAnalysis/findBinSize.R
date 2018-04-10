@@ -23,7 +23,7 @@ binary.flip <- function(x)
 }
 
 # Now load all of the imaging data in the mega csv to grab the summary metrics and lobular values
-mega.csv <- read.csv('../../data/n1601_imagingDataDump_2018-03-02.csv')
+mega.csv <- read.csv('../../data/n1601_imagingDataDump_2018-04-04.csv')
 
 # Now onto the perfusion data 
 cbf.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/asl/n1601_jlfAntsCTIntersectionPcaslValues_20170403.csv')
@@ -53,7 +53,9 @@ stress.data <- read.csv('/data/joy/BBL/projects/barzilayStress/data/pncstressdat
 stress.data$StressBin <- stress.data$Cummulative_Stress_Load_No_Rape
 stress.data$StressBin[which(stress.data$StressBin>=3)] <- 3
 demo.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/demographics/n1601_demographics_go1_20161212.csv')
+healthExclude <- read.csv("/data/joy/BBL/studies/pnc/n1601_dataFreeze/health/n1601_health_20170421.csv", header=TRUE)
 stress.data <- merge(stress.data, demo.data)
+stress.data <- merge(stress.data, healthExclude)
 
 t1.data <- merge(t1.data, stress.data)
 cbf.data <- merge(cbf.data, stress.data)
@@ -82,13 +84,14 @@ pathVals <- names(t1.data)[c(522, 528, 529, 530, 531)]
 pathVals <- names(t1.data)[c(528)]
 
 ## Also declare the summary values
-summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanGMTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_L_IOG.y","mprage_jlf_vol_L_OCP.y","mprage_jlf_vol_L_Pallidum.y","mprage_jlf_vol_L_PCu.y","mprage_jlf_vol_R_Pallidum.y","mprage_jlf_vol_R_PCgG.y")
+summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_L_Pallidum.y","mprage_jlf_vol_R_Pallidum.y", "mprage_jlf_vol_TBV")
 
 # Now loop through and get bins in each
 outDat <- list()
 index <- 1
 for(q in pathVals){
   tmpDat <- calculateDeltaHiMeLo(t1.data, q)
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   # Now create a line plot for all of these guys to 
   # make the interaction appearant
   pdf("interactionPlot.pdf")
