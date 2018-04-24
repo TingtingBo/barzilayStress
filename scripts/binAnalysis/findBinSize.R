@@ -84,7 +84,78 @@ pathVals <- names(t1.data)[c(522, 528, 529, 530, 531)]
 pathVals <- names(t1.data)[c(528)]
 
 ## Also declare the summary values
-summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_L_Pallidum.y","mprage_jlf_vol_R_Pallidum.y", "mprage_jlf_vol_TBV")
+summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_L_Pallidum.y","mprage_jlf_vol_R_Pallidum.y", "mprage_jlf_vol_TBV", 'mprage_jlf_vol_ICV')
+summaryMetrics <- unique(append(summaryMetrics, names(tmpDat2)[c(1050, 2119:2131)]))
+
+## Test the significance for all of these effects
+toAppend <- NULL
+for(i in summaryMetrics){
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
+  tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  mod <- gam(tmpMod, data=tmpDat2)
+  foo <- summary(mod)
+  print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
+  outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)'], NA)
+  toAppend <- rbind(toAppend, outputRow)  
+}
+
+## So we know we have a volume and a ct effect
+## So lest expand our search into the lobes for these modalities
+## The GM lobes that is!
+summaryMetrics <- names(tmpDat2)[2132:2155]
+outputVals <- NULL
+for(i in summaryMetrics){
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
+  tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  mod <- gam(tmpMod, data=tmpDat2)
+  foo <- summary(mod)
+  print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
+  outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)'])
+  outputVals <- rbind(outputVals, outputRow)
+}
+# Now apply FDR correction
+rownames(outputVals) <- NULL
+fdrPValue <- rep(NA, dim(outputVals)[1])
+fdrPValue[1:12] <- p.adjust(outputVals[1:12,2], method='fdr')
+fdrPValue[13:24] <- p.adjust(outputVals[13:24,2], method='fdr')
+outputVals <- cbind(outputVals, fdrPValue)
+# Looks like only 1 lobular region corrected
+# the region was the r temporal lobe for CT
+# So now lets look at all of the regions w/in the right temporal lobe
+summaryMetrics <- c('FuG', 'ITG', 'MTG', 'PP', 'PT', 'STG', 'TMP')
+for(i in summaryMetrics){
+  i <- paste("mprage_jlf_ct_R_", i, sep='')
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
+  tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  mod <- gam(tmpMod, data=tmpDat2)
+  foo <- summary(mod)
+  print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
+  outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)'], 'NA')
+  outputVals <- rbind(outputVals, outputRow)
+}
+outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),3] <- p.adjust(outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),2], method='fdr')
+outputVals <- rbind(toAppend, outputVals)
+rownames(outputVals) <- NULL
+write.csv(outputVals, "~/telescopeMethodRanStressME.csv", quote=F, row.names=F)
+## Now plot our strongest effect!
+## Which is the cortical thickness in the planum temporale mprage_jlf_ct_R_PT
+tmpMod <- as.formula(paste("mprage_jlf_ct_R_PT~s(ageAtScan1)+sex+race2"))
+mod <- gam(tmpMod, data=tmpDat2)
+tmpDat2$tmp <- scale(residuals(mod))
+outPlot <- ggplot(tmpDat2, aes(x=Cummulative_Stress_Load_No_Rape, y=tmp)) + 
+  geom_point() +
+  geom_smooth(method='lm') +
+  ylab('mprage_jlf_ct_R_PT')
+# Now print this bad boy
+pdf('~/telescopeStrongest.pdf')
+outPlot
+dev.off()
 
 # Now loop through and get bins in each
 outDat <- list()
