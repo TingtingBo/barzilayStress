@@ -10,7 +10,7 @@ dataDir="/data/joy/BBL/projects/barzilayStress/data/"
 subjID="bblid,scanid"
 pAdjustMethod="fdr"
 inputDir="/data/joy/BBL/projects/barzilayStress/data/inputCSV/"
-baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+race2"
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+envSES"
 
 # Now dynamic variable arrays
 covsFile=( t1Cov.RDS t1Cov.RDS t1Cov.RDS cbfCov.RDS restCov.RDS restCov.RDS dtiCov.RDS faCov.RDS t1Cov.RDS t1Cov.RDS )
