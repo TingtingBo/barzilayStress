@@ -29,4 +29,30 @@ all.data <- merge(mega.csv, stress.data, by=c('bblid', 'scanid'), suffixes=c("",
 all.data.tu <- all.data[which(all.data$averageManualRating!=0 & all.data$healthExcludev2==0 & all.data$StressBin>=2),]
 
 # Now create our path bin value
-all.data.tu <-
+all.data.tu <- calculateDeltaHiMeLo(all.data.tu, "Anxious_Misery_ar")
+
+# Now remove our middle path group
+all.data.tu <- all.data.tu[-which(all.data.tu$PathGroup==2),]
+
+# Now create our binary outcome
+all.data.tu$resilientOutcome <- 0
+all.data.tu$resilientOutcome[which(all.data.tu$PathGroup==3)] <- 1
+
+# Now find out which subjects don't have a sex, or imaging data we want
+all.data.tu <- all.data.tu[complete.cases(all.data.tu$sex),]
+all.data.tu <- all.data.tu[complete.cases(all.data.tu[,grep('mprage_jlf_vol_', names(all.data.tu))]),]
+
+## Now age and sex regress the volume data - that which we are interested in
+volume.data <- all.data.tu[,grep('mprage_jlf_vol_', names(all.data.tu))]
+volume.data <- apply(volume.data, 2, function(x) regressOutAge(x, all.data.tu$ageAtScan1, all.data.tu$sex))
+
+## Now attach our outcome
+volume.data <- cbind(all.data.tu$resilientOutcome, volume.data)
+
+## Now write this csv for TPOT
+write.csv(volume.data, "~/forTpot.csv", quote=F, row.names=F)
+
+## This isn't run on chead but here is the TPOT call:
+## tpot forTpot.csv -is , -target y -mode classification -scoring auc_roc -v 2
+## I believe the best class method will be an svm... will report back later
+
