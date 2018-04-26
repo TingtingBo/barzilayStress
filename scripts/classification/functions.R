@@ -3,7 +3,6 @@ regressOutAge <- function(valuesToBeRegressed, ageColumn){
     age <- scale(ageColumn)[,1]
     ageSqu <- scale(ageColumn)[,1]^2
     ageCub <- scale(ageColumn)[,1]^3
-    quality <- qualityColumn
     newValues <- lm(valuesToBeRegressed ~ age + ageSqu + ageCub + quality)$residuals
     return(newValues)
 }
