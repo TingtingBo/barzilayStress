@@ -24,12 +24,15 @@ stress.data <- merge(stress.data, healthExclude)
 
 # now merge em
 all.data <- merge(mega.csv, stress.data, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+all.data <- calculateDeltaHiMeLo(all.data, "Anxious_Misery_ar")
+
+# Now find out which subjects don't have a sex, or imaging data we want
+all.data <- all.data[complete.cases(all.data$sex),]
+all.data <- all.data[complete.cases(all.data[,grep('mprage_jlf_vol_', names(all.data))]),]
+all.data[,grep('mprage_jlf_vol_', names(all.data))] <- apply(all.data[,grep('mprage_jlf_vol_', names(all.data))], 2, function(x) regressOutAge(x, all.data$ageAtScan1, all.data$sex))
 
 # Now isolate the subjects we want to use
-all.data.tu <- all.data[which(all.data$averageManualRating!=0 & all.data$healthExcludev2==0 & all.data$StressBin>=2),]
-
-# Now create our path bin value
-all.data.tu <- calculateDeltaHiMeLo(all.data.tu, "Anxious_Misery_ar")
+all.data.tu <- all.data[which(all.data$averageManualRating!=0 & all.data$healthExcludev2==0 & all.data$StressBin>=3),]
 
 # Now remove our middle path group
 all.data.tu <- all.data.tu[-which(all.data.tu$PathGroup==2),]
@@ -38,13 +41,9 @@ all.data.tu <- all.data.tu[-which(all.data.tu$PathGroup==2),]
 all.data.tu$resilientOutcome <- 0
 all.data.tu$resilientOutcome[which(all.data.tu$PathGroup==3)] <- 1
 
-# Now find out which subjects don't have a sex, or imaging data we want
-all.data.tu <- all.data.tu[complete.cases(all.data.tu$sex),]
-all.data.tu <- all.data.tu[complete.cases(all.data.tu[,grep('mprage_jlf_vol_', names(all.data.tu))]),]
 
 ## Now age and sex regress the volume data - that which we are interested in
 volume.data <- all.data.tu[,grep('mprage_jlf_vol_', names(all.data.tu))]
-volume.data <- apply(volume.data, 2, function(x) regressOutAge(x, all.data.tu$ageAtScan1, all.data.tu$sex))
 
 ## Now attach our outcome
 volume.data <- cbind(all.data.tu$resilientOutcome, volume.data)
