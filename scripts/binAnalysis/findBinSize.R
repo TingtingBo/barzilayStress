@@ -23,7 +23,7 @@ binary.flip <- function(x)
 }
 
 # Now load all of the imaging data in the mega csv to grab the summary metrics and lobular values
-mega.csv <- read.csv('../../data/n1601_imagingDataDump_2018-04-04.csv')
+mega.csv <- read.csv('/data/jux/BBL/projects/barzilayStress/data/n1601_imagingDataDump_2018-04-04.csv')
 
 # Now onto the perfusion data 
 cbf.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/asl/n1601_jlfAntsCTIntersectionPcaslValues_20170403.csv')
@@ -107,7 +107,7 @@ for(i in summaryMetrics){
 ## First thing though, we need to create a subcortical volume variable for the left and right hemi's
 mega.csv$mprage_jlfLobe_vol_R_DGM <- rowSums(mega.csv[,c(109,111,114,121,127,129,131)])
 mega.csv$mprage_jlfLobe_vol_L_DGM <- rowSums(mega.csv[,c(110,112,115,122,128,130,132)])
-summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[2132:2155])
+summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[c(2132:2155,,813:824)])
 outputVals <- NULL
 for(i in summaryMetrics){
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
@@ -146,7 +146,7 @@ for(i in summaryMetrics){
 outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),3] <- p.adjust(outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),2], method='fdr')
 outputVals <- rbind(toAppend, outputVals)
 ## Now do the volume regions
-summaryMetrics <- c('R_MCgG','R_ACgG','R_PCgG','R_PHG','R_Ent','R_Accumbens_Area','L_Accumbens_Area','R_Amygdala','L_Amygdala','R_Caudate','L_Caudate','R_Hippocampus','L_Hippocampus','R_Pallidum','L_Pallidum','R_Putamen','L_Putamen','R_Thalamus_Proper','L_Thalamus_Proper')
+summaryMetrics <- c('R_MCgG','R_ACgG','R_PCgG','R_PHG','R_Ent','R_Accumbens_Area','L_Accumbens_Area','R_Amygdala','L_Amygdala','R_Caudate','L_Caudate','R_Hippocampus','L_Hippocampus','R_Pallidum','L_Pallidum','R_Putamen','L_Putamen','R_Thalamus_Proper','L_Thalamus_Proper', 'L_Calc', 'L_Cun', 'L_IOG', 'L_LiG', 'L_MOG', 'L_OCP', 'L_OFuG', 'L_SOG')
 for(i in summaryMetrics){
   i <- paste("mprage_jlf_vol_", i, sep='')
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
@@ -159,7 +159,7 @@ for(i in summaryMetrics){
   outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)'], 'NA')
   outputVals <- rbind(outputVals, outputRow)
 }
-outputVals[grep('mprage_jlf_vol_', outputVals[,1]),3] <- p.adjust(outputVals[grep('mprage_jlf_vol_', outputVals[,1]),2], method='fdr')
+outputVals[grep('mprage_jlf_vol_', outputVals[,1])[-c(1:4)],3] <- p.adjust(outputVals[grep('mprage_jlf_vol_', outputVals[,1])[-c(1:4)],2], method='fdr')
 outputVals <- rbind(toAppend, outputVals)
 rownames(outputVals) <- NULL
 write.csv(outputVals, "~/telescopeMethodRanStressME.csv", quote=F, row.names=F)
@@ -195,10 +195,10 @@ for(i in summaryMetrics){
   toAppend <- rbind(toAppend, outputRow)  
 }
 
-## So we know we have a volume and a ct effect
+## So we know we have a volume
 ## So lest expand our search into the lobes for these modalities
 ## The GM lobes that is!
-summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[2132:2143])
+summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[c(2132:2143,813:824)])
 outputVals <- NULL
 for(i in summaryMetrics){
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape*Anxious_Misery_ar"))
@@ -214,14 +214,13 @@ for(i in summaryMetrics){
 # Now apply FDR correction
 rownames(outputVals) <- NULL
 fdrPValue <- rep(NA, dim(outputVals)[1])
-fdrPValue[1:12] <- p.adjust(outputVals[1:12,2], method='fdr')
+fdrPValue <- p.adjust(outputVals[,2], method='fdr')
 outputVals <- cbind(outputVals, fdrPValue)
-# Looks like only 1 lobular region corrected
-# the region was the r temporal lobe for CT
-# So now lets look at all of the regions w/in the right temporal lobe
-summaryMetrics <- c('FuG', 'ITG', 'MTG', 'PP', 'PT', 'STG', 'TMP')
+# Looks like both of our DGM regions corrected
+# So now lets look at all of the regions w/in the this area
+summaryMetrics <-c('R_Accumbens_Area','L_Accumbens_Area','R_Amygdala','L_Amygdala','R_Caudate','L_Caudate','R_Hippocampus','L_Hippocampus','R_Pallidum','L_Pallidum','R_Putamen','L_Putamen','R_Thalamus_Proper','L_Thalamus_Proper')
 for(i in summaryMetrics){
-  i <- paste("mprage_jlf_ct_R_", i, sep='')
+  i <- paste("mprage_jlf_vol_", i, sep='')
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape*Anxious_Misery_ar"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
@@ -232,10 +231,14 @@ for(i in summaryMetrics){
   outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape:Anxious_Misery_ar','Pr(>|t|)'], 'NA')
   outputVals <- rbind(outputVals, outputRow)
 }
-outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),3] <- p.adjust(outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),2], method='fdr')
+outputVals[grep('mprage_jlf_vol_', outputVals[,1])[-c(1:12)],3] <- p.adjust(outputVals[grep('mprage_jlf_vol_', outputVals[,1])[-c(1:12)],2], method='fdr')
 outputVals <- rbind(toAppend, outputVals)
 rownames(outputVals) <- NULL
+# Now write these values
+write.csv(outputVals, "~/telescopeMethodRanStressIE.csv", quote=F, row.names=F)
 
+# Now create an interaction plot for every ROI that corrects
+summaryMetrics <- outputVals[which(outputVals[,3]<.05),1]
 # Now loop through and get bins in each
 outDat <- list()
 index <- 1
@@ -246,8 +249,11 @@ for(q in pathVals){
   # make the interaction appearant
   pdf("interactionPlot.pdf")
   for(w in summaryMetrics){
-    tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+    tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c(".y", ""))
     colVal <- grep(paste(w), names(tmpDat2))
+    if(length(colVal)>1){
+        colVal <- colVal[2]
+    }
     tmpDat2 <- tmpDat2[complete.cases(tmpDat2$StressBin),]
     tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
     tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c(1,2,3))
@@ -261,6 +267,33 @@ for(q in pathVals){
       geom_smooth(method='lm',level=0) + 
       ylab(gsub(x=w, pattern='.y', replacement=''))
     print(outPlot2)
+  }
+  dev.off()
+  # Now do the same but in the regressed values
+  pdf("interactionPlotResid.pdf")
+  for(w in summaryMetrics){
+      tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c(".y", ""))
+      colVal <- grep(paste(w), names(tmpDat2))
+      if(length(colVal)>1){
+          colVal <- colVal[2]
+      }
+      tmpDat2 <- tmpDat2[complete.cases(tmpDat2$StressBin),]
+      tmpMod <- gam(tmpDat2[,colVal] ~ s(ageAtScan1) + sex + averageManualRating + race2, data=tmpDat2)
+      index <- complete.cases(tmpDat2[,colVal])
+      tmpDat2$tmpVals <- NA
+      tmpDat2$tmpVals[index] <- as.numeric(scale(residuals(tmpMod)))
+      tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
+      tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c(1,2,3))
+      outPlot <- ggplot(tmpDat2, aes(x=Anxious_Misery_ar, y=tmpVals, group=StressBin, col=StressBin)) +
+      geom_point() +
+      geom_smooth(method='lm',level=0) +
+      ylab(gsub(x=w, pattern='.y', replacement=''))
+      print(outPlot)
+      outPlot2 <- ggplot(tmpDat2, aes(x=Cummulative_Stress_Load_No_Rape, y=tmpVals, group=PathGroup, col=PathGroup)) +
+      geom_point() +
+      geom_smooth(method='lm',level=0) +
+      ylab(gsub(x=w, pattern='.y', replacement=''))
+      print(outPlot2)
   }
   dev.off()
   tmpDat <- tmpDat[-which(tmpDat$PathGroup==2),]
