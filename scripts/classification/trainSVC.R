@@ -7,7 +7,23 @@
 ## Source Adon's library
 source('/home/arosen/adroseHelperScripts/R/afgrHelpFunc.R')
 source('./functions.R')
-install_load('ggplot2','mgcv')
+install_load('ggplot2','mgcv', 'pROC', 'caret', 'plyr')
+
+## Source a function
+robustscale <- function (data, dim = 2, center = TRUE, scale = TRUE)
+{
+    medians = NULL
+    if (center) {
+        medians <- apply(data, dim, median, na.rm = TRUE)
+        data = sweep(data, dim, medians, "-")
+    }
+    mads = NULL
+    if (scale) {
+        mads <- apply(data, dim, mad, na.rm = TRUE)
+        data = (sweep(data, dim, mads, "/"))
+    }
+    return(list(data = data, medians = medians, mads = mads))
+}
 
 ## Load data
 # Now load all of the imaging data in the mega csv to grab the summary metrics and lobular values
@@ -41,17 +57,54 @@ all.data.tu <- all.data.tu[-which(all.data.tu$PathGroup==2),]
 all.data.tu$resilientOutcome <- 0
 all.data.tu$resilientOutcome[which(all.data.tu$PathGroup==3)] <- 1
 
-
-## Now age and sex regress the volume data - that which we are interested in
+# Now grab the volume values
 volume.data <- all.data.tu[,grep('mprage_jlf_vol_', names(all.data.tu))]
 
 ## Now attach our outcome
 volume.data <- cbind(all.data.tu$resilientOutcome, volume.data)
 
 ## Now write this csv for TPOT
+freeze <- volume.data
 write.csv(volume.data, "~/forTpot.csv", quote=F, row.names=F)
 
 ## This isn't run on chead but here is the TPOT call:
 ## tpot forTpot.csv -is , -target y -mode classification -scoring auc_roc -v 2
 ## I believe the best class method will be an svm... will report back later
 
+## First grab AUC from an roc curve for each of the individual regions
+## SOme of these are pretty impressive
+## L MFC is >.75!
+## Largest AUC is .77 for the R PoG!
+allAUC <- apply(volume.data[,-1], 2, function(x) auc(roc(volume.data[,1] ~ x)))
+
+## Now I am going to train a SVC to classify our resilient and non resilient groups
+## I am going to do this in a 5 fold cv fashion?
+## First thing I need to to do is declare my folds
+volume.data <- freeze
+folds <- createFolds(factor(volume.data[,1]), k=13)
+outPred <- rep(NA, length(volume.data[,1]))
+colnames(volume.data)[1] <- 'outcome'
+volume.data$outcome <- factor(volume.data$outcome)
+volume.data$outcome <- revalue(volume.data$outcome,c('0'='Path', '1'='NoPath'))
+volume.data[,2:144] <- robustscale(volume.data[,2:144])$data
+cost<-10^(-1:2)
+gamma<- c(.5,1,2)
+fitGrid <- expand.grid(cost)
+colnames(fitGrid) <- 'C'
+for(i in 1:length(folds)){
+    index <- folds[[i]]
+    training <- volume.data[-index,]
+    testing <- volume.data[index,]
+    trctrl <- trainControl(method="repeatedcv",number=10,repeats=3,classProbs=TRUE, summaryFunction=twoClassSummary)
+    
+    svm_Linear <- train(outcome~., data = training, method = "svmLinear",
+      trControl=trctrl,metric="ROC",
+      tuneLength = 10,tuneGrid = fitGrid)
+    # Now see if we can get probabilities for these in the testing data set
+    outPred[index] <- predict(svm_Linear, newdata=testing, type='prob')[,1]
+}
+roc(volume.data$outcome ~ outPred)
+rocplot.single(pred=outPred, grp=binary.flip(as.numeric(volume.data$outcome)), title="Resilience Prediction")
+
+# Now create  summary svm to see how different ROI's get weighted
+sumSVM <- train(outcome~.,data=volume.data, method="svmLinear",trControl=trctrl,metric="ROC",tuneLength=10, tuneGrid=fitGrid)
