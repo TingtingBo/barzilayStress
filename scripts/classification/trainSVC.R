@@ -6,6 +6,7 @@
 
 ## Source Adon's library
 source('/home/arosen/adroseHelperScripts/R/afgrHelpFunc.R')
+source('/home/arosen/jlfVisualizer/scripts/Rfunction/makeITKSnapColorTable.R')
 source('./functions.R')
 install_load('ggplot2','mgcv', 'pROC', 'caret', 'plyr')
 
@@ -41,6 +42,9 @@ stress.data <- merge(stress.data, healthExclude)
 # now merge em
 all.data <- merge(mega.csv, stress.data, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
 all.data <- calculateDeltaHiMeLo(all.data, "Anxious_Misery_ar")
+## Now create a histogram of these path values
+tmpPlot <- ggplot(all.data, aes(x=all.data$Anxious_Misery_ar, fill=factor(PathGroup))) +
+  geom_histogram(bins=200)
 
 # Now find out which subjects don't have a sex, or imaging data we want
 all.data <- all.data[complete.cases(all.data$sex),]
@@ -76,6 +80,31 @@ write.csv(volume.data, "~/forTpot.csv", quote=F, row.names=F)
 ## L MFC is >.75!
 ## Largest AUC is .77 for the R PoG!
 allAUC <- apply(volume.data[,-1], 2, function(x) auc(roc(volume.data[,1] ~ x)))
+
+# Now make a color table for these univariate AUC values
+allAUC <- cbind(names(allAUC), unname(allAUC))
+writeColorTableandKey(inputData=allAUC, inputColumn=2, outName='rawAUC', maxTmp=c(.43,.78))
+## Here is the shell call to create the image
+# /home/arosen/hiLo/scripts/05_BrainRankFigure/scripts/makeZScoreJLFPNCTemplateImage.sh rawAUC-KEY.csv 4 1
+
+## Now plot a histogram for our two groups and there vaolume values
+colnames(volume.data)[1] <- 'outcome'
+tmpDat1 <- volume.data[which(volume.data$outcome==0),]
+tmpDat2 <- volume.data[which(volume.data$outcome==1),]
+outPlot1 <- ggplot(volume.data) +
+  geom_histogram(data=tmpDat2, aes(x=mprage_jlf_vol_R_PoG, fill='red')) +
+  geom_histogram(data=tmpDat1, aes(x=mprage_jlf_vol_R_PoG, fill='blue')) +
+  theme(legend.position="none") +
+  xlab("Right Post Central Gyrus") +
+  xlim(c(-3500,3500))
+outPlot2 <- rocplot.single(pred=volume.data$mprage_jlf_vol_R_PoG, grp=as.numeric(volume.data$outcome), title="R PoG ROC")
+pdf('univariatePred.pdf')
+outPlot1
+outPlot2
+dev.off()
+
+## 
+
 
 ## Now I am going to train a SVC to classify our resilient and non resilient groups
 ## I am going to do this in a 5 fold cv fashion?

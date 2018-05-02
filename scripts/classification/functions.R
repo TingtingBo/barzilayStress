@@ -21,7 +21,7 @@ calculateDeltaHiMeLo <- function(data, facScore) {
     data$PathGroup[which(data[,colVal] < quantiles[2])] <- 1
     data$PathGroup[which(data[,colVal] >= quantiles[2] &
     data[,colVal] < quantiles[3])] <- 2
-    data$PathGroup[which(data[,colVal] >= quantiles[3])] <- 3
+    data$PathGroup[which(data[,colVal] > quantiles[3])] <- 3
     
     output <- data
     return(output)
@@ -100,3 +100,8 @@ rocplot.single <- function(grp, pred, title = "ROC Plot", p.value = FALSE){
     return(p)
 }
 
+
+binary.flip <- function(x)
+{
+    x*-1 + 1
+}
