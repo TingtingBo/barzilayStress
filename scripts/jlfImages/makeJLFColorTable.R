@@ -66,6 +66,7 @@ for(i in summaryMetrics){
 }
 toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
 toAppend <- toAppend[which(toAppend[,4]<.05),]
+nameVals <- toAppend[,1]
 
 ## Now write the color table
 writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressME')
@@ -83,9 +84,10 @@ for(i in summaryMetrics){
   toAppend <- rbind(toAppend, outputRow)  
 }
 toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
+toAppend <- toAppend[which(toAppend[,1] %in% nameVals),]
 
 ## Now write the color table
-writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithRace')
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithRace', minTmp=c(-4.8, 0), maxTmp=c(0, .8))
 
 ## Now do our interactions
 toAppend <- NULL
@@ -100,10 +102,11 @@ for(i in summaryMetrics){
   toAppend <- rbind(toAppend, outputRow)  
 }
 toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
-toAppend <- toAppend[which(toAppend[,4]<.05),]
+toAppend <- toAppend[which(toAppend[,4]<.055),]
+nameVals <- toAppend[,1]
 
 ## Now write the color table
-writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressInteraction')
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressInteraction', minTmp=c(-4.8, 0), maxTmp=c(2.8, 3.7))
 
 ## Now do our interactions with race
 toAppend <- NULL
@@ -118,6 +121,7 @@ for(i in summaryMetrics){
   toAppend <- rbind(toAppend, outputRow)  
 }
 toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
+toAppend <- toAppend[which(toAppend[,1] %in% nameVals),]
 
 ## Now write the color table
-writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressInteractionRace')
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressInteractionRace', minTmp=c(-4.8, 0), maxTmp=c(2.8, 3.7))
