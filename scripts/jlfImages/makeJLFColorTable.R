@@ -6,7 +6,7 @@
 ## Source any functions
 source('/home/arosen/jlfVisualizer/scripts/Rfunction/makeITKSnapColorTable.R')
 source('/home/arosen/adroseHelperScripts/R/afgrHelpFunc.R')
-install_load('ggplot2','mgcv')
+install_load('ggplot2','mgcv','plyr')
 binary.flip <- function(x)
 {
     x*-1 + 1
@@ -78,6 +78,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape',c('t value','Pr(>|t|)')], NA)
@@ -87,7 +89,49 @@ toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
 toAppend <- toAppend[which(toAppend[,1] %in% nameVals),]
 
 ## Now write the color table
-writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithRace', minTmp=c(-4.8, 0), maxTmp=c(0, .8))
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithRace', minTmp=c(-4.8, 0), maxTmp=c(0, 1.4))
+
+## NOw do the same in our white participants
+toAppend <- NULL
+for(i in summaryMetrics){
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+Cummulative_Stress_Load_No_Rape"))
+  tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
+  tmpDat2 <- tmpDat2[which(tmpDat2$race2=='1'),]
+  mod <- gam(tmpMod, data=tmpDat2)
+  foo <- summary(mod)
+  outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape',c('t value','Pr(>|t|)')], NA)
+  toAppend <- rbind(toAppend, outputRow)  
+}
+toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
+toAppend <- toAppend[which(toAppend[,1] %in% nameVals),]
+
+## Now write the color table
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithWhite', minTmp=c(-4.8, 0), maxTmp=c(0, 1.8))
+
+## Now do the same in our black participants
+toAppend <- NULL
+for(i in summaryMetrics){
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+Cummulative_Stress_Load_No_Rape"))
+  tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
+  tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
+  tmpDat2 <- tmpDat2[which(tmpDat2$race2=='2'),]
+  mod <- gam(tmpMod, data=tmpDat2)
+  foo <- summary(mod)
+  outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape',c('t value','Pr(>|t|)')], NA)
+  toAppend <- rbind(toAppend, outputRow)  
+}
+toAppend[,4] <- p.adjust(toAppend[,3], method='fdr')
+toAppend <- toAppend[which(toAppend[,1] %in% nameVals),]
+
+## Now write the color table
+writeColorTableandKey(inputData=toAppend, inputColumn=2, outName='stressMEwithBlack', minTmp=c(-4.8, 0), maxTmp=c(0, 1.8))
 
 ## Now do our interactions
 toAppend <- NULL
@@ -115,6 +159,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   outputRow <- c(i, foo$p.table['Cummulative_Stress_Load_No_Rape:Anxious_Misery_ar',c('t value','Pr(>|t|)')], NA)

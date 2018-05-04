@@ -6,11 +6,11 @@
 
 # Define statics
 gamScript="/data/joy/BBL/tutorials/code/roiWrapper/gamROI.R"
-dataDir="/data/joy/BBL/projects/barzilayStress/data/"
+dataDir="/data/jux/BBL/projects/barzilayStress/data/"
 subjID="bblid,scanid"
 pAdjustMethod="fdr"
-inputDir="/data/joy/BBL/projects/barzilayStress/data/inputCSV/"
-baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+envSES"
+inputDir="/data/jux/BBL/projects/barzilayStress/data/inputCSV/"
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex"
 
 # Now dynamic variable arrays
 covsFile=( t1Cov.RDS t1Cov.RDS t1Cov.RDS cbfCov.RDS restCov.RDS restCov.RDS dtiCov.RDS faCov.RDS t1Cov.RDS t1Cov.RDS )
@@ -19,6 +19,18 @@ covIn=( averageManualRating averageManualRating averageManualRating pcaslTSNR re
 inputName=( n1601_jlfAntsCTIntersectionVol_20170412.csv n1601_jlfAntsCTIntersectionCT_20170331.csv n1601_jlfAtroposIntersectionGMD_20170410.csv n1601_jlfAntsCTIntersectionPcaslValues_20170403.csv n1601_jlfReHoValues_20170714.csv n1601_jlfALFFValues_20170714.csv n1601_jlfTRValues_20170411.csv n1601_JHULabelsFA_20170321.csv n1396_Nmf18Bases_CT_bblids.csv n1396_Nmf26Bases_Ravens_bblids.csv )
 
 # Now loop thorugh the length of our array and run our univariate analyses for each metric
+for i in `seq 0 9` ; do 
+  formulaValue=`echo ${baseCovsForm}+${covIn[i]}`
+  covsValue=${dataDir}${covsFile[i]}
+  inputData=${inputDir}${inputName[i]}
+
+  # Now call the script 
+  Rscript ${gamScript} -c ${covsValue} -o ${dataDir} -p ${inputData} -i ${excludeVals[i]} -u ${subjID} -f ${formulaValue} -a ${pAdjustMethod} -r false -n 1
+  echo ${formulaValue} ; 
+done
+
+# Now add race 
+baseCovsForm="~s(ageAtScan1,k=4)+Cummulative_Stress_Load_No_Rape+sex+race2"
 for i in `seq 0 9` ; do 
   formulaValue=`echo ${baseCovsForm}+${covIn[i]}`
   covsValue=${dataDir}${covsFile[i]}

@@ -4,7 +4,7 @@
 # the stress project led by Ran Brazley
 
 # Load all the data
-match.subjects <- read.csv('/data/joy/BBL/projects/barzilayStress/data/matchSubjects.csv')
+match.subjects <- read.csv('/data/jux/BBL/projects/barzilayStress/data/matchSubjects.csv')
 # Start with the structural imaging data 
 vol.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/t1struct/n1601_jlfAntsCTIntersectionVol_20170412.csv')
 ct.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/t1struct/n1601_jlfAntsCTIntersectionCT_20170331.csv')
@@ -43,7 +43,7 @@ fa.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/neuroimaging/dti
 fa.data <- merge(fa.data, qa.data)
 
 # Now grab our stress value and merge this in
-stress.data <- read.csv('/data/joy/BBL/projects/barzilayStress/data/pncstressdatasetforadon.csv')
+stress.data <- read.csv('/data/jux/BBL/projects/barzilayStress/data/pncstressdatasetforadon.csv')
 demo.data <- read.csv('/data/joy/BBL/studies/pnc/n1601_dataFreeze/demographics/n1601_demographics_go1_20161212.csv')
 stress.data <- merge(stress.data, demo.data)
 # Now add the health excludes
@@ -69,7 +69,7 @@ t1.cov$t1Exclude[t1.cov$incidentalFindingExclude==1] <- 0
 t1.cov$t1Exclude2 <- 0
 t1.cov$t1Exclude2[t1.cov$bblid %in% match.subjects$bblid] <- 1
 
-saveRDS(t1.cov, "/data/joy/BBL/projects/barzilayStress/data/t1Cov.RDS")
+saveRDS(t1.cov, "/data/jux/BBL/projects/barzilayStress/data/t1Cov.RDS")
 
 # Now do the cbf data
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'pcaslTSNR', 'pcaslExclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES', 'Anxious_Misery_ar', 'incidentalFindingExclude')
@@ -81,7 +81,7 @@ cbf.cov$pcaslExclude <- binary.flip(cbf.cov$pcaslExclude)
 cbf.cov$cbfExclude[cbf.cov$incidentalFindingExclude==1] <- 0
 cbf.cov$cbfExclude2 <- 0
 cbf.cov$cbfExclude2[cbf.cov$bblid %in% match.subjects$bblid] <- 1
-saveRDS(cbf.cov, "/data/joy/BBL/projects/barzilayStress/data/cbfCov.RDS")
+saveRDS(cbf.cov, "/data/jux/BBL/projects/barzilayStress/data/cbfCov.RDS")
 
 # Now do reho 
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'restRelMeanRMSMotion', 'restExclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES', 'Anxious_Misery_ar', 'incidentalFindingExclude')
@@ -93,7 +93,7 @@ rest.cov$restExclude <- binary.flip(rest.cov$restExclude)
 rest.cov$restExclude[rest.cov$incidentalFindingExclude==1] <- 0
 rest.cov$restExclude2 <- 0
 rest.cov$restExclude2[rest.cov$bblid %in% match.subjects$bblid] <- 1
-saveRDS(rest.cov, "/data/joy/BBL/projects/barzilayStress/data/restCov.RDS")
+saveRDS(rest.cov, "/data/jux/BBL/projects/barzilayStress/data/restCov.RDS")
 
 # Now do DTI
 demoOfInterest <- c('bblid', 'scanid', 'ageAtScan1', 'sex', 'dti64Tsnr', 'dti64Exclude', 'Cummulative_Stress_Load_No_Rape', 'race2', 'Overall_Psychopathology_ar', 'envSES', 'Anxious_Misery_ar', 'incidentalFindingExclude')
@@ -105,7 +105,7 @@ dti.cov$dti64Exclude <- binary.flip(dti.cov$dti64Exclude)
 dti.cov$t1Exclude[dti.cov$incidentalFindingExclude==1] <- 0
 dti.cov$dtiExclude2 <- 0
 dti.cov$dtiExclude2[dti.cov$bblid %in% match.subjects$blid] <- 1
-saveRDS(dti.cov, "/data/joy/BBL/projects/barzilayStress/data/dtiCov.RDS")
+saveRDS(dti.cov, "/data/jux/BBL/projects/barzilayStress/data/dtiCov.RDS")
 
 dti.cov <- fa.data[,demoOfInterest]
 dti.cov <- dti.cov[complete.cases(dti.cov),]
@@ -115,7 +115,7 @@ dti.cov$dti64Exclude <- binary.flip(dti.cov$dti64Exclude)
 dti.cov$t1Exclude[dti.cov$incidentalFindingExclude==1] <- 0
 dti.cov$dtiExclude2 <- 0
 dti.cov$dtiExclude2[dti.cov$bblid %in% match.subjects$blid] <- 1
-saveRDS(dti.cov, "/data/joy/BBL/projects/barzilayStress/data/faCov.RDS")
+saveRDS(dti.cov, "/data/jux/BBL/projects/barzilayStress/data/faCov.RDS")
 
 # Now prepare the demographics for each of these modalities
 source("~/adroseHelperScripts/R/afgrHelpFunc.R")

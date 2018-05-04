@@ -5,7 +5,7 @@
 
 ## Source Adon's library
 source('/home/arosen/adroseHelperScripts/R/afgrHelpFunc.R')
-install_load('ggplot2','mgcv')
+install_load('ggplot2','mgcv','plyr')
 
 ## Load the data
 # Start with the structural imaging data 
@@ -90,10 +90,12 @@ summaryMetrics <- unique(append(summaryMetrics, names(mega.csv)[c(471, 1540:1552
 ## Test the significance for all of these effects
 toAppend <- NULL
 for(i in summaryMetrics){
-  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+envSES+Cummulative_Stress_Load_No_Rape"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
@@ -107,13 +109,15 @@ for(i in summaryMetrics){
 ## First thing though, we need to create a subcortical volume variable for the left and right hemi's
 mega.csv$mprage_jlfLobe_vol_R_DGM <- rowSums(mega.csv[,c(109,111,114,121,127,129,131)])
 mega.csv$mprage_jlfLobe_vol_L_DGM <- rowSums(mega.csv[,c(110,112,115,122,128,130,132)])
-summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[c(2132:2155,,813:824)])
+summaryMetrics <- c('mprage_jlfLobe_vol_R_DGM', 'mprage_jlfLobe_vol_L_DGM',names(tmpDat2)[c(2132:2155,813:824)])
 outputVals <- NULL
 for(i in summaryMetrics){
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
@@ -137,6 +141,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
@@ -153,6 +159,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape','Pr(>|t|)']))
@@ -188,6 +196,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape:Anxious_Misery_ar','Pr(>|t|)']))
@@ -205,6 +215,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape:Anxious_Misery_ar','Pr(>|t|)']))
@@ -225,6 +237,8 @@ for(i in summaryMetrics){
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2$race2 <- factor(tmpDat2$race2)
+  tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
   foo <- summary(mod)
   print(paste(i, foo$p.table['Cummulative_Stress_Load_No_Rape:Anxious_Misery_ar','Pr(>|t|)']))
@@ -257,6 +271,7 @@ for(q in pathVals){
     tmpDat2 <- tmpDat2[complete.cases(tmpDat2$StressBin),]
     tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
     tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c(1,2,3))
+    tmpDat2$race2 <- factor(tmpDat2$race2)
     outPlot <- ggplot(tmpDat2, aes(x=Anxious_Misery_ar, y=tmpDat2[,colVal], group=StressBin, col=StressBin)) + 
       geom_point() +
       geom_smooth(method='lm',level=0) + 
@@ -284,6 +299,7 @@ for(q in pathVals){
       tmpDat2$tmpVals[index] <- as.numeric(scale(residuals(tmpMod)))
       tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
       tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c(1,2,3))
+      tmpDat2$race2 <- factor(tmpDat2$race2)
       outPlot <- ggplot(tmpDat2, aes(x=Anxious_Misery_ar, y=tmpVals, group=StressBin, col=StressBin)) +
       geom_point() +
       geom_smooth(method='lm',level=0) +
