@@ -1,9 +1,9 @@
 # Now I need to make a function which will regress out age from a column
-regressOutAge <- function(valuesToBeRegressed, ageColumn, sexColumn){
+regressOutAge <- function(valuesToBeRegressed, ageColumn, sexColumn, raceColumn){
     age <- scale(ageColumn)[,1]
     ageSqu <- scale(ageColumn)[,1]^2
     ageCub <- scale(ageColumn)[,1]^3
-    newValues <- lm(valuesToBeRegressed ~ age + ageSqu + ageCub + sexColumn)$residuals
+    newValues <- lm(valuesToBeRegressed ~ age + ageSqu + ageCub + sexColumn + factor(raceColumn))$residuals
     return(newValues)
 }
 

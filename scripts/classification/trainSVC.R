@@ -49,7 +49,7 @@ tmpPlot <- ggplot(all.data, aes(x=all.data$Anxious_Misery_ar, fill=factor(PathGr
 # Now find out which subjects don't have a sex, or imaging data we want
 all.data <- all.data[complete.cases(all.data$sex),]
 all.data <- all.data[complete.cases(all.data[,grep('mprage_jlf_vol_', names(all.data))]),]
-all.data[,grep('mprage_jlf_vol_', names(all.data))] <- apply(all.data[,grep('mprage_jlf_vol_', names(all.data))], 2, function(x) regressOutAge(x, all.data$ageAtScan1, all.data$sex))
+all.data[,grep('mprage_jlf_vol_', names(all.data))] <- apply(all.data[,grep('mprage_jlf_vol_', names(all.data))], 2, function(x) regressOutAge(x, all.data$ageAtScan1, all.data$sex, all.data$race2))
 
 # Now isolate the subjects we want to use
 all.data.tu <- all.data[which(all.data$averageManualRating!=0 & all.data$healthExcludev2==0 & all.data$StressBin>=3),]
