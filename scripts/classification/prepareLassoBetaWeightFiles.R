@@ -23,9 +23,11 @@ select.percent <- apply(select.percent, 1, sum)/500
 outvals1 <- cbind(names(select.percent), select.percent)
 
 ## Now prepare the beta weight values
-select.strength <- t(select.strength[,which(select.strength!=0)])
-select.strength <- scale(select.strength)
-outvals2 <- cbind(rownames(select.strength), select.strength)
+name.vals <- colnames(row.name)[-1][index]
+index <- select.strength[1,]!=0
+select.strength <- select.strength[1,select.strength[1,]!=0]
+select.strength <- as.numeric(scale(t(select.strength)))
+outvals2 <- cbind(name.vals, select.strength)
 
 ## Now export the color scales and keys
 writeColorTableandKey(inputData=outvals1, inputColumn=2, outName='selectPercent', minTmp=c(-1, 0), maxTmp=c(0, 1))

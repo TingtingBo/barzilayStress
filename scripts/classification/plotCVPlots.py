@@ -56,17 +56,17 @@ plt.ylabel('True Positive Rate')
 plt.title('')
 all_mean_auc = np.zeros(100)
 all_accuracy_values = np.zeros(100)
-selected_values = np.zeros(36500)
-selected_values = np.reshape(selected_values, (73,500))
+selected_values = np.zeros(69500)
+selected_values = np.reshape(selected_values, (139,500))
 q = 0
 for identifier in list(range(0,100)):
     # Run classifier with cross-validation and plot ROC curves
-    cv = StratifiedKFold(n_splits=5, random_state=identifier)
+    cv = StratifiedKFold(n_splits=4, random_state=identifier)
     classifier = sklearn.linear_model.LogisticRegression(C=1.0, penalty='l1', dual=False)
     tprs = []
     aucs = []
     mean_fpr = np.linspace(0, 1, 100)
-    predVals = np.zeros(115)
+    predVals = np.zeros(117)
     i = 0
     for train, test in cv.split(X, y):
         probas_ = classifier.fit(X[train], y[train]).predict_proba(X[test])
@@ -100,6 +100,13 @@ for identifier in list(range(0,100)):
 ## Now write the selected_values data frame
 np.savetxt("betaWeightsAllFolds.csv",selected_values, delimiter=',', fmt='%1.4f')
 
+## Now write out a selection percent value
+out_select_percent = selected_values==0
+out_select_percent = out_select_percent.sum(axis=1)
+out_select_percent = out_select_percent / 500
+out_select_percent = np.transpose(out_select_percent)
+np.savetxt("selectPercentage.csv", out_select_percent, delimiter=',', fmt='%1.4f')
+
 std_auc = np.std(all_mean_auc).round(2)
 mean_auc = np.mean(all_mean_auc).round(2)
 std_accuracy = np.std(all_accuracy_values).round(2)
@@ -114,6 +121,6 @@ outplot.savefig("ROCCurve.png", dpi=300, format='png')
 
 ## Now train a model in everything to see which variables are used
 final_model = classifier.fit(X, y)
-output_betas = np.zeros(139)
 output_betas = final_model.coef_
+output_betas = np.vstack([output_betas, sklearn.preprocessing.scale(output_betas, axis=1)])
 np.savetxt("betaWeightsFinal.csv", output_betas, delimiter=',',fmt='%1.4f')
