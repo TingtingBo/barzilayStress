@@ -19,8 +19,16 @@ mkdir -p ./intNoRace
 mv outputImage.nii.gz intNoRace/
 
 mkdir -p ./intWithRace
-/home/arosen/hiLo/scripts/05_BrainRankFigure/scripts/makeZScoreJLFPNCTemplateImage.sh stressInteractionRace-KEY.csv 4 1
+/home/arosen/hiLo/scripts/05_BrainRankFigure/scripts/makeZScoreJLFPNCTemplateImage.sh selectPercent-KEY.csv 4 1
 mv outputImage.nii.gz intWithRace/
+
+mkdir -p ./selectPercent
+/home/arosen/hiLo/scripts/05_BrainRankFigure/scripts/makeZScoreJLFPNCTemplateImage.sh selectPercent-KEY.csv 4 1
+mv outputImage.nii.gz selectPercent/
+
+mkdir -p ./selectStrength
+/home/arosen/hiLo/scripts/05_BrainRankFigure/scripts/makeZScoreJLFPNCTemplateImage.sh selectStrength-KEY.csv 4 1
+mv outputImage.nii.gz selectStrength/
 
 cd meNoRace
 itksnap -g /share/apps/fsl/5.0.8/data/standard/MNI152_T1_1mm_brain.nii.gz -s outputImage.nii.gz -l ../stressME-ColorTable.txt
