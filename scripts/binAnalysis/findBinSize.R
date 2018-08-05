@@ -145,10 +145,11 @@ pathVals <- 'Anxious_Misery_ar'
 
 ## Also declare the summary values
 summaryMetrics <- c("mprage_jlf_ct_MeanCT", "pcasl_jlf_cbf_MeanGMCBF", "dti_jlf_tr_MeanTR", "mprage_jlf_vol_ICV", "mprage_antsCT_vol_GrayMatter", "mprage_jlf_vol_TBV", 'mprage_jlf_vol_ICV')
+summaryMetrics <- unique(append(summaryMetrics, names(mega.csv)[c(471, 1540:1552)]))
 ## Test the significance for all of these effects
 toAppend <- NULL
 for(i in summaryMetrics){
-  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+envSES+Cummulative_Stress_Load_No_Rape+averageManualRating"))
+  tmpMod <- as.formula(paste(i, "~ageAtScan1+sex+race2+Cummulative_Stress_Load_No_Rape+averageManualRating"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
@@ -215,13 +216,19 @@ for(i in summaryMetrics){
 outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),3] <- p.adjust(outputVals[grep('mprage_jlf_ct_R_', outputVals[,1]),2], method='fdr')
 outputVals <- rbind(toAppend, outputVals)
 ## Now do the volume regions
-summaryMetrics <- c('R_MCgG','R_ACgG','R_PCgG','R_PHG','R_Ent','R_Accumbens_Area','L_Accumbens_Area','R_Amygdala','L_Amygdala','R_Caudate','L_Caudate','R_Hippocampus','L_Hippocampus','R_Pallidum','L_Pallidum','R_Putamen','L_Putamen','R_Thalamus_Proper','L_Thalamus_Proper', 'L_Calc', 'L_Cun', 'L_IOG', 'L_LiG', 'L_MOG', 'L_OCP', 'L_OFuG', 'L_SOG')
+summaryMetrics <-c('R_Accumbens_Area','L_Accumbens_Area','R_Amygdala','L_Amygdala','R_Caudate','L_Caudate','R_Hippocampus','L_Hippocampus','R_Pallidum','L_Pallidum','R_Putamen','L_Putamen','R_Thalamus_Proper','L_Thalamus_Proper')
+summaryMetrics <- names(tmpDat2)[grep("mprage_jlf_vol_", names(tmpDat2))][c(1:79, 140:145)]
+summaryMetrics <- gsub(summaryMetrics, pattern='_R_', replacement='_')
+summaryMetrics <- gsub(summaryMetrics, pattern='_L_', replacement='_')
+summaryMetrics <- unique(summaryMetrics)
+summaryMetrics <- summaryMetrics[-grep(".y", summaryMetrics)]
+summaryMetrics <- summaryMetrics[-c(1,2,3,4,8,9,10,11,16,18,19)]
 for(i in summaryMetrics){
-  i <- paste("mprage_jlf_vol_", i, sep='')
-  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+envSES+Cummulative_Stress_Load_No_Rape"))
+  tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+Cummulative_Stress_Load_No_Rape"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
+  tmpDat2 <- averageLeftAndRight(tmpDat2)
   tmpDat2$race2 <- factor(tmpDat2$race2)
   tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
   mod <- gam(tmpMod, data=tmpDat2)
@@ -258,6 +265,7 @@ for(i in summaryMetrics){
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+averageManualRating+Cummulative_Stress_Load_No_Rape*Anxious_Misery_ar"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat <- tmpDat[-which(tmpDat$t1Exclude==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
   tmpDat2$race2 <- factor(tmpDat2$race2)
   tmpDat2$race2 <- revalue(tmpDat2$race2, c('1'='1', '2'='2', '3'='2'))
@@ -280,6 +288,7 @@ for(i in summaryMetrics){
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+averageManualRating+Cummulative_Stress_Load_No_Rape*Anxious_Misery_ar"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat <- tmpDat[-which(tmpDat$t1Exclude==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
   tmpDat2 <- averageLeftAndRight(tmpDat2)
   tmpDat2$race2 <- factor(tmpDat2$race2)
@@ -305,12 +314,14 @@ summaryMetrics <- gsub(summaryMetrics, pattern='_R_', replacement='_')
 summaryMetrics <- gsub(summaryMetrics, pattern='_L_', replacement='_')
 summaryMetrics <- unique(summaryMetrics)
 summaryMetrics <- summaryMetrics[-grep(".y", summaryMetrics)]
-summaryMetrics <- summaryMetrics[-c(1,2,3,4,8,9,10,11,16,18,19)]
+summaryMetrics <- summaryMetrics[-c(1:11,14,15,16,18,19)]
 for(i in summaryMetrics){
   #i <- paste("mprage_jlf_vol_", i, sep='')
+
   tmpMod <- as.formula(paste(i, "~s(ageAtScan1)+sex+race2+averageManualRating+Cummulative_Stress_Load_No_Rape*Anxious_Misery_ar"))
   tmpDat <- calculateDeltaHiMeLo(t1.data, 'Anxious_Misery_ar')
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat <- tmpDat[-which(tmpDat$t1Exclude==1),]
   tmpDat2 <- merge(tmpDat, mega.csv, by=c('bblid', 'scanid'), suffixes=c("", ".y"))
   tmpDat2 <- averageLeftAndRight(tmpDat2)
   tmpDat2$race2 <- factor(tmpDat2$race2)
@@ -328,13 +339,14 @@ rownames(outputVals) <- NULL
 write.csv(outputVals, "~/telescopeMethodRanStressIE.csv", quote=F, row.names=F)
 
 # Now create an interaction plot for every ROI that corrects
-summaryMetrics <- c("mprage_jlf_vol_Parietal_Lobe_WM","mprage_jlf_vol_Accumbens_Area","mprage_jlf_vol_Pallidum")
+summaryMetrics <- c("mprage_jlf_vol_Pallidum","mprage_jlf_vol_TBWM","mprage_jlf_vol_TBGM", "mprage_jlfLobe_vol_Parietal_Lobe", "mprage_jlfLobe_vol_Insular_Lobe")
 # Now loop through and get bins in each
 outDat <- list()
 index <- 1
 for(q in pathVals){
   tmpDat <- calculateDeltaHiMeLo(t1.data, q)
   tmpDat <- tmpDat[-which(tmpDat$healthExcludev2==1),]
+  tmpDat <- tmpDat[-which(tmpDat$t1Exclude==1),]
   # Now create a line plot for all of these guys to 
   # make the interaction appearant
   pdf("interactionPlot.pdf")
@@ -371,32 +383,40 @@ for(q in pathVals){
           colVal <- colVal[2]
       }
       tmpDat2 <- tmpDat2[complete.cases(tmpDat2$StressBin),]
-      tmpMod <- gam(tmpDat2[,colVal] ~ s(ageAtScan1) + sex + averageManualRating + race2, data=tmpDat2)
-      index <- complete.cases(tmpDat2[,colVal])
+      tmpMod <- gam(tmpDat2[,colVal] ~ s(ageAtScan1.y) + sex.y + averageManualRating + race2.y, data=tmpDat2)
+      index <- complete.cases(tmpDat2[,w])
       tmpDat2$tmpVals <- NA
       tmpDat2$tmpVals[index] <- as.numeric(scale(residuals(tmpMod)))
       tmpDat2$StressBin <- factor(tmpDat2$StressBin, levels=c(0,1,2,3))
+      tmpDat2$StressBin <- revalue(tmpDat2$StressBin, replace=c("0"="No TSE", "1"="1 TSE", "2"="2 TSE", "3"="3+ TSE"))
       tmpDat2$PathGroup <- factor(tmpDat2$PathGroup, levels=c("Low","Middle","High"))
       tmpDat2$race2 <- factor(tmpDat2$race2)
       outPlot <- ggplot(tmpDat2, aes(x=Anxious_Misery_ar, y=tmpVals, group=StressBin, col=StressBin)) +
-      geom_point() +
-      geom_smooth(method='lm',level=0, size=3) +
+      #geom_point() +
+      geom_smooth(method='lm', size=3) +
       ylab('') +
-      xlab('Anxious Misery Factor Score') +
-      coord_cartesian(ylim=c(-3,4), xlim=c(-2.5,4)) +
-      theme(legend.position="bottom") +
-      theme(text = element_text(size = 34))
+      xlab('') +
+      theme_bw() + 
+      coord_cartesian(ylim=c(-1.5,1.5), xlim=c(-2.5,4)) +
+      theme(legend.position="none") +
+      theme(text = element_text(size = 34)) + 
+      scale_color_brewer(palette='Reds')
       #print(outPlot)
       outPlot2 <- ggplot(tmpDat2, aes(x=Cummulative_Stress_Load_No_Rape, y=tmpVals, group=PathGroup, col=PathGroup)) +
-      geom_point() +
-      geom_smooth(method='lm',level=0, size=3) +
+      #geom_point() +
+      geom_smooth(method='lm', size=3) +
       ylab('') + 
-      xlab("Cummulative Stress Count") +
-      theme(legend.position="bottom") +
-      coord_cartesian(ylim=c(-3,4), xlim=c(0,7)) +
-      theme(text = element_text(size = 34))
-      #print(outPlot2)
-      multiplot(outPlot, outPlot2, cols=2)
+      xlab("Traumatic Stressful Events") +
+     theme_bw() + 
+      theme(legend.position="none") +
+      coord_cartesian(ylim=c(-1.5,1.5), xlim=c(0,7)) +
+      theme(text = element_text(size = 34)) + 
+      scale_color_brewer(palette="Blues")
+      png(paste(w, "PATH.png", sep=''), width=16, height=12, units='in', res=300)
+      print(outPlot)
+      dev.off()
+      png(paste(w, "TSE.png", sep=''), width=16, height=12, units='in', res=300)
+      print(outPlot2)
       dev.off()
   }
   tmpDat <- tmpDat[-which(tmpDat$PathGroup==2),]
