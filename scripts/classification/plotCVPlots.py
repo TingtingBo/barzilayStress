@@ -37,6 +37,9 @@ def Find_Optimal_Cutoff(target, predicted):
 # Import some data to play with
 tpot_data = pd.read_csv('/Users/arose/Documents/forRan/barzilayStress/scripts/classification/forTpot.csv', sep=',', dtype=np.float64)
 X = tpot_data.drop('y', axis=1).values
+transformer = sklearn.preprocessing.RobustScaler(copy=False)
+transformer.fit(X)
+#X = transformer.transform(X)
 y = tpot_data.y
 
 # #############################################################################
@@ -53,8 +56,8 @@ plt.ylabel('True Positive Rate')
 plt.title('')
 all_mean_auc = np.zeros(100)
 all_accuracy_values = np.zeros(100)
-selected_values = np.zeros(69500)
-selected_values = np.reshape(selected_values, (139,500))
+selected_values = np.zeros(36500)
+selected_values = np.reshape(selected_values, (73,500))
 q = 0
 for identifier in list(range(0,100)):
     # Run classifier with cross-validation and plot ROC curves
