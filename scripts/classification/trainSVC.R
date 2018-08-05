@@ -105,9 +105,14 @@ all.data <- calculateDeltaHiMeLo(all.data, "Anxious_Misery_ar")
 tmpPlot <- ggplot(all.data, aes(x=all.data$Anxious_Misery_ar, fill=factor(PathGroup))) +
   geom_histogram(bins=200)
 # Now create a histogram for those subjects that have 3+ TSE
-tmpPlot2 <- ggplot(all.data[which(all.data$StressBin==3),], aes(x=Anxious_Misery_ar, fill=factor(PathGroup))) +
-  geom_histogram(bins=50)
-
+probs <- c(0.33, 0.66)
+df <- data.frame(density(all.data[which(all.data$StressBin == 3), "Anxious_Misery_ar"], na.rm = T)[c("x", "y")])
+quantiles <- quantile(all.data[, "Anxious_Misery_ar"], na.rm = T,probs = probs)
+df$quant <- factor(findInterval(df$x, quantiles))
+outPlot2 <- ggplot(df, aes(x, y)) + geom_line() + geom_ribbon(aes(ymin = 0, ymax = y, fill = quant)) + scale_fill_brewer(guide = "none") + ylab("Density") + xlab("Pathological Loading") + theme_bw() + theme(text = element_text(size = 34))
+png("densityPlot.png", width=16, height=12, units='in', res=300)
+print(outPlot2)
+dev.off()
 
 # Now find out which subjects don't have a sex, or imaging data we want
 all.data <- all.data[complete.cases(all.data$sex),]
