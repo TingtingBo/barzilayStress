@@ -15,7 +15,7 @@ regressOutAge <- function(valuesToBeRegressed, ageColumn, sexColumn, raceColumn)
 calculateDeltaHiMeLo <- function(data, facScore) {
     colVal <- grep(paste('^', facScore, sep=''), names(data))
     
-    quantiles <- quantile(data[,colVal], c(0,.333,.666,1), na.rm=T)
+    quantiles <- quantile(data[,colVal], c(0,.34,.666,1), na.rm=T)
     
     data$PathGroup <- NA
     data$PathGroup[which(data[,colVal] < quantiles[2])] <- 1

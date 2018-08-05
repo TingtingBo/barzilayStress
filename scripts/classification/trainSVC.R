@@ -104,6 +104,10 @@ all.data <- calculateDeltaHiMeLo(all.data, "Anxious_Misery_ar")
 ## Now create a histogram of these path values
 tmpPlot <- ggplot(all.data, aes(x=all.data$Anxious_Misery_ar, fill=factor(PathGroup))) +
   geom_histogram(bins=200)
+# Now create a histogram for those subjects that have 3+ TSE
+tmpPlot2 <- ggplot(all.data[which(all.data$StressBin==3),], aes(x=Anxious_Misery_ar, fill=factor(PathGroup))) +
+  geom_histogram(bins=50)
+
 
 # Now find out which subjects don't have a sex, or imaging data we want
 all.data <- all.data[complete.cases(all.data$sex),]
@@ -111,8 +115,8 @@ all.data <- all.data[complete.cases(all.data[,grep('mprage_jlf_vol_', names(all.
 all.data[,grep('mprage_jlf_vol_', names(all.data))] <- apply(all.data[,grep('mprage_jlf_vol_', names(all.data))], 2, function(x) regressOutAge(x, all.data$ageAtScan1, all.data$sex, all.data$race2))
 
 # Now isolate the subjects we want to use
-all.data.tu <- all.data[which(all.data$averageManualRating!=0 & all.data$healthExcludev2==0 & all.data$StressBin>=3),]
-all.data.tu <- averageLeftAndRight(all.data.tu)
+all.data.tu <- all.data[which(all.data$t1Exclude==0 & all.data$healthExcludev2==0 & all.data$StressBin>=3),]
+#all.data.tu <- averageLeftAndRight(all.data.tu)
 all.data.tu2 <- all.data
 all.data.tu2$collapseVar <- paste(all.data.tu2$StressBin, all.data.tu2$PathGroup)
 all.data.tu2 <- all.data.tu2[which(all.data.tu2$averageManualRating!=0 & all.data.tu2$healthExcludev2==0),]
